@@ -38,9 +38,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @unchecked Sendable {
     }
 
     @objc func handleClick() {
-        guard let event = NSApp.currentEvent else { return }
-
-        if event.type == .rightMouseUp {
+        if NSApp.currentEvent?.type == .rightMouseUp {
             showContextMenu()
         } else {
             openMissionControl()
@@ -48,8 +46,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, @unchecked Sendable {
     }
 
     func openMissionControl() {
-        let url = URL(fileURLWithPath: "/System/Library/CoreServices/Mission Control.app")
-        NSWorkspace.shared.open(url)
+        // Use bundle identifier — more reliable than a hardcoded path
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.exposelauncher") {
+            NSWorkspace.shared.openApplication(at: url, configuration: .init(), completionHandler: nil)
+        } else {
+            // Fallback to hardcoded path
+            let url = URL(fileURLWithPath: "/System/Library/CoreServices/Mission Control.app")
+            NSWorkspace.shared.openApplication(at: url, configuration: .init(), completionHandler: nil)
+        }
     }
 
     func showContextMenu() {
@@ -64,10 +68,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, @unchecked Sendable {
         let quitItem = NSMenuItem(title: "Quit Mission Control", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quitItem)
 
-        // Temporarily assign menu, trigger it, then clear so left-click stays unaffected
-        statusItem?.menu = menu
-        statusItem?.button?.performClick(nil)
-        statusItem?.menu = nil
+        if let button = statusItem?.button, let event = NSApp.currentEvent {
+            NSMenu.popUpContextMenu(menu, with: event, for: button)
+        }
     }
 
     @objc func openSettings() {
@@ -95,7 +98,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Toggle("Open at Login", isOn: $openAtLogin)
-                .onChange(of: openAtLogin) { _, enabled in
+                .onChange(of: openAtLogin) { enabled in
                     do {
                         if enabled {
                             try SMAppService.mainApp.register()
