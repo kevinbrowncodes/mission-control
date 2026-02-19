@@ -6,48 +6,86 @@
 //
 
 import SwiftUI
+import AppKit
 import ServiceManagement
 
 @main
 struct MissionControlApp: App {
-    var body: some Scene {
-        MenuBarExtra("Mission Control", systemImage: "rectangle.3.group") {
-            AppMenu()
-        }
-        .menuBarExtraStyle(.menu)
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
-        Window("Settings", id: "settings") {
-            SettingsView()
-        }
-        .windowResizability(.contentSize)
+    var body: some Scene {
+        // No windows — app runs from the menu bar
+        Settings { EmptyView() }
     }
 }
 
-struct AppMenu: View {
-    @Environment(\.openWindow) private var openWindow
+class AppDelegate: NSObject, NSApplicationDelegate, @unchecked Sendable {
+    private var statusItem: NSStatusItem?
+    private var settingsWindow: NSWindow?
 
-    var body: some View {
-        Button("Open Mission Control") {
-            let task = Process()
-            task.launchPath = "/usr/bin/open"
-            task.arguments = ["-a", "Mission Control"]
-            try? task.run()
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApplication.shared.setActivationPolicy(.accessory)
+
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+
+        if let button = statusItem?.button {
+            button.image = NSImage(systemSymbolName: "rectangle.3.group",
+                                   accessibilityDescription: "Mission Control")
+            button.action = #selector(handleClick)
+            button.target = self
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
+    }
 
-        Divider()
+    @objc func handleClick() {
+        guard let event = NSApp.currentEvent else { return }
 
-        Button("Settings...") {
-            openWindow(id: "settings")
-            NSApplication.shared.activate(ignoringOtherApps: true)
+        if event.type == .rightMouseUp {
+            showContextMenu()
+        } else {
+            openMissionControl()
         }
-        .keyboardShortcut(",")
+    }
 
-        Divider()
+    func openMissionControl() {
+        let url = URL(fileURLWithPath: "/System/Library/CoreServices/Mission Control.app")
+        NSWorkspace.shared.open(url)
+    }
 
-        Button("Quit Mission Control") {
-            NSApplication.shared.terminate(nil)
+    func showContextMenu() {
+        let menu = NSMenu()
+
+        let settingsItem = NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ",")
+        settingsItem.target = self
+        menu.addItem(settingsItem)
+
+        menu.addItem(.separator())
+
+        let quitItem = NSMenuItem(title: "Quit Mission Control", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        menu.addItem(quitItem)
+
+        // Temporarily assign menu, trigger it, then clear so left-click stays unaffected
+        statusItem?.menu = menu
+        statusItem?.button?.performClick(nil)
+        statusItem?.menu = nil
+    }
+
+    @objc func openSettings() {
+        if settingsWindow == nil {
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 320, height: 120),
+                styleMask: [.titled, .closable],
+                backing: .buffered,
+                defer: false
+            )
+            window.title = "Settings"
+            window.contentView = NSHostingView(rootView: SettingsView())
+            window.isReleasedWhenClosed = false
+            window.center()
+            settingsWindow = window
         }
-        .keyboardShortcut("q")
+        settingsWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
 

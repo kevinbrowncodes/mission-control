@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0f3460"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e94560"/>
+      <stop offset="100%" stop-color="#f5a623"/>
+    </linearGradient>
+    <linearGradient id="win1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4facfe"/>
+      <stop offset="100%" stop-color="#00f2fe"/>
+    </linearGradient>
+    <linearGradient id="win2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a18cd1"/>
+      <stop offset="100%" stop-color="#fbc2eb"/>
+    </linearGradient>
+    <linearGradient id="win3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#43e97b"/>
+      <stop offset="100%" stop-color="#38f9d7"/>
+    </linearGradient>
+    <linearGradient id="win4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fa709a"/>
+      <stop offset="100%" stop-color="#fee140"/>
+    </linearGradient>
+    <clipPath id="roundedApp">
+      <rect width="1024" height="1024" rx="224" ry="224"/>
+    </clipPath>
+  </defs>
+
+  <!-- App icon background -->
+  <rect width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
+
+  <!-- Subtle desktop horizon line -->
+  <rect x="0" y="820" width="1024" height="204" rx="0" fill="#0a0a1a" opacity="0.5" clip-path="url(#roundedApp)"/>
+  <rect x="0" y="815" width="1024" height="6" fill="#ffffff" opacity="0.05"/>
+
+  <!-- Top-left window -->
+  <rect x="90" y="200" width="370" height="240" rx="14" fill="url(#win1)" opacity="0.92"/>
+  <!-- window toolbar -->
+  <rect x="90" y="200" width="370" height="36" rx="14" fill="#ffffff" opacity="0.15"/>
+  <circle cx="118" cy="218" r="8" fill="#ff5f57" opacity="0.9"/>
+  <circle cx="144" cy="218" r="8" fill="#febc2e" opacity="0.9"/>
+  <circle cx="170" cy="218" r="8" fill="#28c840" opacity="0.9"/>
+  <!-- window content lines -->
+  <rect x="110" y="258" width="200" height="10" rx="5" fill="#ffffff" opacity="0.3"/>
+  <rect x="110" y="280" width="280" height="10" rx="5" fill="#ffffff" opacity="0.2"/>
+  <rect x="110" y="302" width="240" height="10" rx="5" fill="#ffffff" opacity="0.2"/>
+  <rect x="110" y="324" width="180" height="10" rx="5" fill="#ffffff" opacity="0.15"/>
+  <rect x="110" y="368" width="330" height="52" rx="8" fill="#ffffff" opacity="0.1"/>
+
+  <!-- Top-right window -->
+  <rect x="510" y="160" width="430" height="300" rx="14" fill="url(#win2)" opacity="0.92"/>
+  <rect x="510" y="160" width="430" height="36" rx="14" fill="#ffffff" opacity="0.15"/>
+  <circle cx="538" cy="178" r="8" fill="#ff5f57" opacity="0.9"/>
+  <circle cx="564" cy="178" r="8" fill="#febc2e" opacity="0.9"/>
+  <circle cx="590" cy="178" r="8" fill="#28c840" opacity="0.9"/>
+  <rect x="530" y="216" width="160" height="10" rx="5" fill="#ffffff" opacity="0.3"/>
+  <rect x="530" y="238" width="360" height="10" rx="5" fill="#ffffff" opacity="0.2"/>
+  <rect x="530" y="260" width="300" height="10" rx="5" fill="#ffffff" opacity="0.2"/>
+  <rect x="530" y="282" width="260" height="10" rx="5" fill="#ffffff" opacity="0.15"/>
+  <rect x="530" y="316" width="170" height="100" rx="8" fill="#ffffff" opacity="0.1"/>
+  <rect x="720" y="316" width="190" height="100" rx="8" fill="#ffffff" opacity="0.1"/>
+
+  <!-- Bottom-left window -->
+  <rect x="70" y="490" width="310" height="280" rx="14" fill="url(#win3)" opacity="0.92"/>
+  <rect x="70" y="490" width="310" height="36" rx="14" fill="#ffffff" opacity="0.15"/>
+  <circle cx="98" cy="508" r="8" fill="#ff5f57" opacity="0.9"/>
+  <circle cx="124" cy="508" r="8" fill="#febc2e" opacity="0.9"/>
+  <circle cx="150" cy="508" r="8" fill="#28c840" opacity="0.9"/>
+  <rect x="90" y="546" width="140" height="10" rx="5" fill="#ffffff" opacity="0.3"/>
+  <rect x="90" y="568" width="260" height="10" rx="5" fill="#ffffff" opacity="0.2"/>
+  <rect x="90" y="590" width="210" height="10" rx="5" fill="#ffffff" opacity="0.2"/>
+  <rect x="90" y="626" width="250" height="110" rx="8" fill="#ffffff" opacity="0.1"/>
+
+  <!-- Bottom-right window -->
+  <rect x="430" y="510" width="530" height="260" rx="14" fill="url(#win4)" opacity="0.92"/>
+  <rect x="430" y="510" width="530" height="36" rx="14" fill="#ffffff" opacity="0.15"/>
+  <circle cx="458" cy="528" r="8" fill="#ff5f57" opacity="0.9"/>
+  <circle cx="484" cy="528" r="8" fill="#febc2e" opacity="0.9"/>
+  <circle cx="510" cy="528" r="8" fill="#28c840" opacity="0.9"/>
+  <rect x="450" y="566" width="220" height="10" rx="5" fill="#ffffff" opacity="0.3"/>
+  <rect x="450" y="588" width="460" height="10" rx="5" fill="#ffffff" opacity="0.2"/>
+  <rect x="450" y="610" width="380" height="10" rx="5" fill="#ffffff" opacity="0.2"/>
+  <rect x="450" y="644" width="220" height="96" rx="8" fill="#ffffff" opacity="0.1"/>
+  <rect x="690" y="644" width="240" height="96" rx="8" fill="#ffffff" opacity="0.1"/>
+
+  <!-- Dock bar at the bottom -->
+  <rect x="262" y="838" width="500" height="74" rx="20" fill="#ffffff" opacity="0.1"/>
+  <rect x="262" y="838" width="500" height="74" rx="20" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.15"/>
+  <rect x="290" y="853" width="44" height="44" rx="10" fill="url(#win1)" opacity="0.85"/>
+  <rect x="346" y="853" width="44" height="44" rx="10" fill="url(#win2)" opacity="0.85"/>
+  <rect x="402" y="853" width="44" height="44" rx="10" fill="url(#win3)" opacity="0.85"/>
+  <rect x="458" y="853" width="44" height="44" rx="10" fill="url(#win4)" opacity="0.85"/>
+  <rect x="514" y="853" width="44" height="44" rx="10" fill="url(#accent)" opacity="0.85"/>
+  <rect x="570" y="853" width="44" height="44" rx="10" fill="#ffffff" opacity="0.15"/>
+  <rect x="626" y="853" width="44" height="44" rx="10" fill="#ffffff" opacity="0.15"/>
+
+  <!-- Outer glow ring -->
+  <rect width="1024" height="1024" rx="224" ry="224" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.06"/>
+</svg>
