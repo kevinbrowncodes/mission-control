@@ -245,6 +245,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
 
     // MARK: - Synthesized shortcuts (need Accessibility)
 
+    /// ⌃ plus an arrow key. macOS registers its arrow shortcuts (App Exposé ⌃↓, move a Space
+    /// ⌃← ⌃→) with the Fn flag too, since a real arrow key carries it; a synthesized arrow
+    /// with Control alone does not match and nothing happens.
+    private static let controlArrow: CGEventFlags = [.maskControl, .maskSecondaryFn]
+
     /// App Exposé is ⌃↓. It shows the windows of the *active* app, which is us while the
     /// panel is open, so activation goes back to the user's app first. A sandboxed app has
     /// no other route: the launch arguments Mission Control.app accepts are stripped.
@@ -257,7 +262,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
                 self.activate(previous, allWindows: false)
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                self.postShortcut(keyCode: CGKeyCode(kVK_DownArrow), flags: .maskControl)
+                self.postShortcut(keyCode: CGKeyCode(kVK_DownArrow), flags: Self.controlArrow)
             }
         }
     }
@@ -269,11 +274,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
     }
 
     func triggerPreviousSpace() {
-        synthesize(keyCode: CGKeyCode(kVK_LeftArrow), flags: .maskControl)
+        synthesize(keyCode: CGKeyCode(kVK_LeftArrow), flags: Self.controlArrow)
     }
 
     func triggerNextSpace() {
-        synthesize(keyCode: CGKeyCode(kVK_RightArrow), flags: .maskControl)
+        synthesize(keyCode: CGKeyCode(kVK_RightArrow), flags: Self.controlArrow)
     }
 
     func triggerSpotlight() {
