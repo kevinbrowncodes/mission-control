@@ -14,6 +14,7 @@ Build 2 is a panel, not a button:
 | Quick actions | App Exposé, Show Desktop, Previous/Next Space, Spotlight | Accessibility |
 | Running apps | List with icons, count, type-to-filter; click to switch (un-hides too); frontmost marker | none |
 | Running apps | Expand an app to list its windows and raise one; hover to quit an app | Accessibility |
+| Space names | Name the current Space from the panel's THIS SPACE row; while Mission Control is open each named Space's thumbnail is filled with its name | none |
 | Global shortcut | ⌃⌥M opens the panel from any app (toggle in Settings) | none |
 | Settings | Open at Login, shortcut toggle, live Accessibility status with Grant / Open System Settings | none |
 

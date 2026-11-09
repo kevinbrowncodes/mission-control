@@ -55,6 +55,7 @@ final class RenderActions: PopoverActions {
     func focusApp(_ app: NSRunningApplication) {}
     func focusWindow(_ window: AppWindow, of app: NSRunningApplication) {}
     func quitApp(_ app: NSRunningApplication) {}
+    func nameThisSpace() {}
 }
 
 // MARK: - Helpers

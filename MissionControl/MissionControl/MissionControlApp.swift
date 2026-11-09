@@ -29,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
     private var settingsWindow: NSWindow?
     private var globalEventMonitor: Any?
     private var hotKey: GlobalHotKey?
+    private let spaceLabels = SpaceLabelManager()
 
     /// The app that was in front when the panel opened. Actions that depend on the active
     /// app (App Exposé) hand activation back to it first.
@@ -66,6 +67,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
         }
 
         syncHotKey()
+        spaceLabels.start()
         NotificationCenter.default.addObserver(self, selector: #selector(preferencesChanged),
                                                name: UserDefaults.didChangeNotification, object: nil)
     }
@@ -80,6 +82,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
 
     @objc private func preferencesChanged() {
         syncHotKey()
+        spaceLabels.refreshEnabled()
     }
 
     /// Registers or drops the ⌃⌥M shortcut to match the preference.
@@ -121,7 +124,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
         lastFrontmostApp = NSWorkspace.shared.frontmostApplication
         // Fresh content each time so the running-apps list is current.
         popover.contentViewController = NSHostingController(
-            rootView: MainPopoverView(actions: self, frontmostApp: lastFrontmostApp)
+            rootView: MainPopoverView(
+                actions: self, frontmostApp: lastFrontmostApp,
+                spaceName: spaceLabels.activeSpaceName,
+                spaceNamesEnabled: UserDefaults.standard.bool(forKey: Preferences.spaceLabelsEnabledKey))
         )
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         activateSelf()
@@ -167,6 +173,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
         let settingsItem = NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
+
+        let nameItem = NSMenuItem(title: "Name This Space…", action: #selector(nameThisSpace), keyEquivalent: "")
+        nameItem.target = self
+        nameItem.isEnabled = UserDefaults.standard.bool(forKey: Preferences.spaceLabelsEnabledKey)
+        menu.addItem(nameItem)
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(
@@ -181,13 +192,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
         }
     }
 
+    @objc func nameThisSpace() {
+        closePopover()
+        // Let the popover close first so the naming alert isn't stacked on it.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            self.spaceLabels.renameActiveSpace()
+        }
+    }
+
     // MARK: - Settings Window
 
     @objc func openSettings() {
         closePopover()
         if settingsWindow == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 440, height: 300),
+                contentRect: NSRect(x: 0, y: 0, width: 440, height: 340),
                 styleMask: [.titled, .closable],
                 backing: .buffered,
                 defer: false

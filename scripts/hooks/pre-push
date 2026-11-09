@@ -1,0 +1,3 @@
+#!/bin/bash
+# Runs the local gates before every push (there is no hosted CI).
+exec "$(git rev-parse --show-toplevel)/scripts/check.sh"

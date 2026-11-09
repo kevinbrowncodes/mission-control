@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var loginItemError: String?
     @State private var hasAccessibility = AccessibilityAccess.isGranted
     @AppStorage(Preferences.hotKeyEnabledKey) private var hotKeyEnabled = true
+    @AppStorage(Preferences.spaceLabelsEnabledKey) private var spaceLabelsEnabled = true
 
     /// Re-checks the permission while the window is open, since granting it in System
     /// Settings doesn't necessarily bring this window back to the front.
@@ -30,6 +31,7 @@ struct SettingsView: View {
                         .foregroundColor(.red)
                 }
                 Toggle("Open the panel with ⌃⌥M from any app", isOn: $hotKeyEnabled)
+                Toggle("Show Space names in Mission Control", isOn: $spaceLabelsEnabled)
             }
 
             Section("Permissions") {
@@ -65,7 +67,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 440, height: 300)
+        .frame(width: 440, height: 340)
         .onAppear { refreshAccessibility() }
         .onReceive(poll) { _ in refreshAccessibility() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in

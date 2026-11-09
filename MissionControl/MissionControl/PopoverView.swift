@@ -26,6 +26,7 @@ protocol PopoverActions: AnyObject {
     func focusApp(_ app: NSRunningApplication)
     func focusWindow(_ window: AppWindow, of app: NSRunningApplication)
     func quitApp(_ app: NSRunningApplication)
+    func nameThisSpace()
 }
 
 // MARK: - Main Popover View
@@ -39,15 +40,22 @@ struct MainPopoverView: View {
     @State private var expandedPID: pid_t?
     @State private var filter = ""
     private let hasAccessibility: Bool
+    /// The current Space's name; nil when unnamed. The row is hidden when Space names are off.
+    private let spaceName: String?
+    private let spaceNamesEnabled: Bool
 
     private let workspaceCenter = NSWorkspace.shared.notificationCenter
 
     init(actions: PopoverActions,
          frontmostApp: NSRunningApplication? = NSWorkspace.shared.frontmostApplication,
          hasAccessibility: Bool = AccessibilityAccess.isGranted,
-         expandedApp: NSRunningApplication? = nil) {
+         expandedApp: NSRunningApplication? = nil,
+         spaceName: String? = nil,
+         spaceNamesEnabled: Bool = true) {
         self.actions = actions
         self.hasAccessibility = hasAccessibility
+        self.spaceName = spaceName
+        self.spaceNamesEnabled = spaceNamesEnabled
         _runningApps = State(initialValue: Self.currentRunningApps())
         _frontmostPID = State(initialValue: frontmostApp?.processIdentifier)
         _expandedPID = State(initialValue: expandedApp?.processIdentifier)
@@ -71,6 +79,10 @@ struct MainPopoverView: View {
         VStack(spacing: 0) {
             header
             Divider()
+            if spaceNamesEnabled {
+                thisSpace
+                Divider()
+            }
             quickActions
             Divider()
             runningAppsList
@@ -114,6 +126,31 @@ struct MainPopoverView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+    }
+
+    // MARK: This Space
+
+    /// The current Space's name and the way to set it. Naming lives here, in the panel,
+    /// because a right-click menu is something users don't find.
+    private var thisSpace: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            sectionLabel("THIS SPACE")
+                .padding(.top, 10)
+            HStack(spacing: 8) {
+                Image(systemName: "rectangle.inset.filled")
+                    .foregroundColor(.secondary)
+                Text(spaceName ?? "Not named")
+                    .foregroundColor(spaceName == nil ? .secondary : .primary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                Spacer()
+                Button(spaceName == nil ? "Name\u{2026}" : "Rename\u{2026}") { actions.nameThisSpace() }
+                    .controlSize(.small)
+                    .help("Name this Space so its name shows in Mission Control")
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 10)
+        }
     }
 
     // MARK: Quick Actions
