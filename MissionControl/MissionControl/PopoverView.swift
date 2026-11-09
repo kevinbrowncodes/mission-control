@@ -397,6 +397,7 @@ struct QuickActionButton: View {
             }
         }
         .buttonStyle(.plain)
+        .keyboardActivatable(action)
         .help(helpText)
         .onHover { hovered in withAnimation(.easeInOut(duration: 0.12)) { isHovered = hovered } }
     }
@@ -475,6 +476,7 @@ struct RunningAppRow: View {
         )
         .contentShape(Rectangle())
         .onTapGesture { onFocus() }
+        .keyboardActivatable(onFocus, label: "Switch to \(app.localizedName ?? "app")")
         .onHover { hovered in withAnimation(.easeInOut(duration: 0.1)) { isHovered = hovered } }
     }
 }
@@ -553,7 +555,42 @@ struct WindowRow: View {
         )
         .contentShape(Rectangle())
         .onTapGesture { onSelect() }
+        .keyboardActivatable(onSelect, label: "Bring \(window.title) forward")
         .onHover { isHovered = $0 }
         .help(window.isMinimized ? "\(window.title) (minimized)" : window.title)
+    }
+}
+
+// MARK: - Keyboard activation
+
+extension View {
+    /// Makes a control work without a mouse: Space or Return runs `action` once it has
+    /// keyboard focus, and its accessibility press (VoiceOver, automation) runs it too.
+    /// SwiftUI leaves `.plain` buttons and tap-gesture rows out of keyboard activation on
+    /// macOS, so keyboard-only and remote users could focus them but not use them.
+    func keyboardActivatable(_ action: @escaping () -> Void, label: String? = nil) -> some View {
+        modifier(KeyboardActivatable(action: action, label: label))
+    }
+}
+
+private struct KeyboardActivatable: ViewModifier {
+    let action: () -> Void
+    let label: String?
+
+    func body(content: Content) -> some View {
+        let accessible = content
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { action() }
+        if #available(macOS 14.0, *) {
+            accessible
+                .focusable(interactions: .activate)
+                .onKeyPress(keys: [.space, .return]) { _ in
+                    action()
+                    return .handled
+                }
+                .accessibilityHint(label ?? "")
+        } else {
+            accessible
+        }
     }
 }
