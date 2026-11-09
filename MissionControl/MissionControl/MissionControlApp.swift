@@ -47,7 +47,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
 
         if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "rectangle.3.group",
-                                   accessibilityDescription: "Mission Control")
+                                   accessibilityDescription: "Mission Control Launcher")
             button.action = #selector(handleClick)
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -181,7 +181,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(
-            title: "Quit Mission Control",
+            title: "Quit Mission Control Launcher",
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         )
@@ -192,12 +192,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
         }
     }
 
+    /// Opens the naming box while the panel is still up, so this app is active when the box
+    /// takes focus; the panel closes as the box becomes key. Closing the panel first left an
+    /// accessory app with no window, macOS handed activation to the previous app, and typing
+    /// went there instead of into the box.
     @objc func nameThisSpace() {
+        spaceLabels.renameActiveSpace()
         closePopover()
-        // Let the popover close first so the naming alert isn't stacked on it.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            self.spaceLabels.renameActiveSpace()
-        }
     }
 
     // MARK: - Settings Window

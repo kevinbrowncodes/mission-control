@@ -1,4 +1,4 @@
-# Mission Control
+# Mission Control Launcher
 
 A macOS menu bar utility that puts Mission Control, App Exposé, Show Desktop and your running apps one click away.
 

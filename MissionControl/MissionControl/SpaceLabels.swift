@@ -132,7 +132,9 @@ final class SpaceLabelManager {
         alert.addButton(withTitle: "Save")
         alert.addButton(withTitle: "Cancel")
         alert.window.initialFirstResponder = field
-        if #available(macOS 14.0, *) { NSApp.activate() } else { NSApp.activate(ignoringOtherApps: true) }
+        // From the menu bar icon's right-click menu this app may not be active; the box must
+        // take the keyboard either way, so activate firmly rather than cooperatively.
+        NSApp.activate(ignoringOtherApps: true)
         guard alert.runModal() == .alertFirstButtonReturn else { return }
 
         let name = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)

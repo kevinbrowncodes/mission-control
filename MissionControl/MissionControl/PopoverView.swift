@@ -113,7 +113,7 @@ struct MainPopoverView: View {
             Image(systemName: "rectangle.3.group")
                 .font(.title2)
                 .foregroundColor(.accentColor)
-            Text("Mission Control")
+            Text("Mission Control Launcher")
                 .font(.headline)
                 .fontWeight(.semibold)
             Spacer()
@@ -337,7 +337,7 @@ struct MainPopoverView: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
-            .help("Quit Mission Control")
+            .help("Quit Mission Control Launcher")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)

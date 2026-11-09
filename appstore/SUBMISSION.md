@@ -1,4 +1,4 @@
-# Mission Control — App Store submission
+# Mission Control Launcher — App Store submission
 
 Mac App Store listing, screenshots and the resubmission after the Guideline 4.2 rejection.
 
