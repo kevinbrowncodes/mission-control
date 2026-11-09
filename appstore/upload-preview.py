@@ -23,7 +23,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ASCPILOT = os.path.expanduser("~/Documents/GitHub/kevinbrowncodes/ascpilot/bin/asc.py")
 VIDEO = os.path.join(HERE, "preview", "preview.mp4")
 PREVIEW_TYPE = "DESKTOP"
-POSTER = "00:00:06:00"  # the "Name your Spaces" shot
+POSTER = "00:00:06:15"  # mid "Name your Spaces" (4.7–8.2 s), clear of both crossfades
 
 spec = importlib.util.spec_from_file_location("asc", ASCPILOT)
 asc = importlib.util.module_from_spec(spec)
