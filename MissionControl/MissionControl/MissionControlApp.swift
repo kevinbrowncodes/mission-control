@@ -302,14 +302,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, @unchecke
         }
     }
 
-    func focusWindow(_ window: AppWindow, of app: NSRunningApplication) {
-        closePopover()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            WindowLister.raise(window)
-            self.activate(app, allWindows: false)
-        }
-    }
-
     /// `NSRunningApplication.terminate()` sends a Quit Apple event, which the App Sandbox
     /// blocks (it returns false). Fall back to sending ⌘Q straight to that process.
     func quitApp(_ app: NSRunningApplication) {

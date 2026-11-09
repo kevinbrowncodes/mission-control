@@ -24,7 +24,6 @@ protocol PopoverActions: AnyObject {
     func triggerSpotlight()
     func triggerScreenshot()
     func focusApp(_ app: NSRunningApplication)
-    func focusWindow(_ window: AppWindow, of app: NSRunningApplication)
     func quitApp(_ app: NSRunningApplication)
     func nameThisSpace()
 }
@@ -37,7 +36,6 @@ struct MainPopoverView: View {
     @State private var runningApps: [NSRunningApplication]
     /// The app that was in front before the popover took focus.
     @State private var frontmostPID: pid_t?
-    @State private var expandedPID: pid_t?
     @State private var filter = ""
     private let hasAccessibility: Bool
     /// The current Space's name; nil when unnamed. The row is hidden when Space names are off.
@@ -49,7 +47,6 @@ struct MainPopoverView: View {
     init(actions: PopoverActions,
          frontmostApp: NSRunningApplication? = NSWorkspace.shared.frontmostApplication,
          hasAccessibility: Bool = AccessibilityAccess.isGranted,
-         expandedApp: NSRunningApplication? = nil,
          spaceName: String? = nil,
          spaceNamesEnabled: Bool = true) {
         self.actions = actions
@@ -58,7 +55,6 @@ struct MainPopoverView: View {
         self.spaceNamesEnabled = spaceNamesEnabled
         _runningApps = State(initialValue: Self.currentRunningApps())
         _frontmostPID = State(initialValue: frontmostApp?.processIdentifier)
-        _expandedPID = State(initialValue: expandedApp?.processIdentifier)
     }
 
     private static func currentRunningApps() -> [NSRunningApplication] {
@@ -122,6 +118,7 @@ struct MainPopoverView: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
+            .keyboardActivatable { actions.openSettings() }
             .help("Settings")
         }
         .padding(.horizontal, 16)
@@ -263,24 +260,11 @@ struct MainPopoverView: View {
                 ScrollView {
                     VStack(spacing: 2) {
                         ForEach(visibleApps, id: \.processIdentifier) { app in
-                            let isExpanded = expandedPID == app.processIdentifier
                             RunningAppRow(app: app,
-                                          isFrontmost: app.processIdentifier == frontmostPID,
-                                          isExpanded: isExpanded) {
+                                          isFrontmost: app.processIdentifier == frontmostPID) {
                                 actions.focusApp(app)
-                            } onToggleWindows: {
-                                withAnimation(.easeInOut(duration: 0.15)) {
-                                    expandedPID = isExpanded ? nil : app.processIdentifier
-                                }
                             } onQuit: {
                                 actions.quitApp(app)
-                            }
-                            if isExpanded {
-                                WindowListView(app: app, hasAccessibility: hasAccessibility) { window in
-                                    actions.focusWindow(window, of: app)
-                                } onRequestAccess: {
-                                    actions.requestAccessibility()
-                                }
                             }
                         }
                     }
@@ -296,8 +280,7 @@ struct MainPopoverView: View {
     /// Size it to its rows, capped so long lists scroll.
     private var listHeight: CGFloat {
         let rows = CGFloat(visibleApps.count) * 36
-        let expanded: CGFloat = expandedPID == nil ? 0 : 110
-        return min(rows + expanded + 8, 230)
+        return min(rows + 8, 230)
     }
 
     private func emptyLabel(_ text: String) -> some View {
@@ -320,6 +303,7 @@ struct MainPopoverView: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
+            .keyboardActivatable { actions.openSettings() }
 
             Spacer()
 
@@ -337,6 +321,7 @@ struct MainPopoverView: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
+            .keyboardActivatable { NSApplication.shared.terminate(nil) }
             .help("Quit Mission Control Launcher")
         }
         .padding(.horizontal, 16)
@@ -413,9 +398,7 @@ struct QuickActionButton: View {
 struct RunningAppRow: View {
     let app: NSRunningApplication
     let isFrontmost: Bool
-    let isExpanded: Bool
     let onFocus: () -> Void
-    let onToggleWindows: () -> Void
     let onQuit: () -> Void
 
     @State private var isHovered = false
@@ -426,16 +409,6 @@ struct RunningAppRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Button(action: onToggleWindows) {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                    .frame(width: 12)
-            }
-            .buttonStyle(.plain)
-            .help(isExpanded ? "Hide windows" : "Show windows")
-
             Image(nsImage: icon)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
@@ -445,6 +418,7 @@ struct RunningAppRow: View {
                 .font(.body)
                 .lineLimit(1)
                 .truncationMode(.tail)
+                .accessiblePress(onFocus)
 
             Spacer()
 
@@ -464,6 +438,7 @@ struct RunningAppRow: View {
                         .font(.body)
                 }
                 .buttonStyle(.plain)
+                .keyboardActivatable(onQuit)
                 .help("Quit \(app.localizedName ?? "app")")
                 .transition(.opacity)
             }
@@ -481,95 +456,23 @@ struct RunningAppRow: View {
     }
 }
 
-// MARK: - Window List
-
-/// The windows of one app, shown beneath its row. Created only when the user expands the
-/// row, so the Accessibility query runs for that app alone.
-struct WindowListView: View {
-    let app: NSRunningApplication
-    let hasAccessibility: Bool
-    let onSelect: (AppWindow) -> Void
-    let onRequestAccess: () -> Void
-
-    @State private var windows: [AppWindow]
-
-    init(app: NSRunningApplication, hasAccessibility: Bool,
-         onSelect: @escaping (AppWindow) -> Void, onRequestAccess: @escaping () -> Void) {
-        self.app = app
-        self.hasAccessibility = hasAccessibility
-        self.onSelect = onSelect
-        self.onRequestAccess = onRequestAccess
-        _windows = State(initialValue: hasAccessibility ? WindowLister.windows(of: app) : [])
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 1) {
-            if !hasAccessibility {
-                Button(action: onRequestAccess) {
-                    Label("Grant Accessibility access to list windows", systemImage: "lock.fill")
-                        .font(.caption)
-                        .foregroundColor(.orange)
-                }
-                .buttonStyle(.plain)
-                .padding(.vertical, 4)
-            } else if windows.isEmpty {
-                Text("No windows")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.vertical, 4)
-            } else {
-                ForEach(windows) { window in
-                    WindowRow(window: window) { onSelect(window) }
-                }
-            }
-        }
-        .padding(.leading, 40)
-        .padding(.trailing, 8)
-        .padding(.bottom, 4)
-    }
-}
-
-struct WindowRow: View {
-    let window: AppWindow
-    let onSelect: () -> Void
-
-    @State private var isHovered = false
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: window.isMinimized ? "minus.square" : "macwindow")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .frame(width: 14)
-            Text(window.title)
-                .font(.callout)
-                .lineLimit(1)
-                .truncationMode(.middle)
-            Spacer()
-        }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(
-            RoundedRectangle(cornerRadius: 5)
-                .fill(isHovered ? Color.accentColor.opacity(0.12) : Color.clear)
-        )
-        .contentShape(Rectangle())
-        .onTapGesture { onSelect() }
-        .keyboardActivatable(onSelect, label: "Bring \(window.title) forward")
-        .onHover { isHovered = $0 }
-        .help(window.isMinimized ? "\(window.title) (minimized)" : window.title)
-    }
-}
-
 // MARK: - Keyboard activation
 
 extension View {
     /// Makes a control work without a mouse: Space or Return runs `action` once it has
-    /// keyboard focus, and its accessibility press (VoiceOver, automation) runs it too.
+    /// keyboard focus.
     /// SwiftUI leaves `.plain` buttons and tap-gesture rows out of keyboard activation on
     /// macOS, so keyboard-only and remote users could focus them but not use them.
     func keyboardActivatable(_ action: @escaping () -> Void, label: String? = nil) -> some View {
         modifier(KeyboardActivatable(action: action, label: label))
+    }
+}
+
+extension View {
+    /// Makes a row's title the accessible button for the row's own action, so VoiceOver and
+    /// automation can press it without taking over the row's other buttons.
+    func accessiblePress(_ action: @escaping () -> Void) -> some View {
+        self.accessibilityAddTraits(.isButton).accessibilityAction { action() }
     }
 }
 
@@ -578,11 +481,11 @@ private struct KeyboardActivatable: ViewModifier {
     let label: String?
 
     func body(content: Content) -> some View {
-        let accessible = content
-            .accessibilityAddTraits(.isButton)
-            .accessibilityAction { action() }
+        // Keyboard only. An accessibility action here would land on every child of a row
+        // (SwiftUI passes it down) and override a child button's own press, so rows name
+        // their accessible press on their title instead (see accessiblePress).
         if #available(macOS 14.0, *) {
-            accessible
+            content
                 .focusable(interactions: .activate)
                 .onKeyPress(keys: [.space, .return]) { _ in
                     action()
@@ -590,7 +493,7 @@ private struct KeyboardActivatable: ViewModifier {
                 }
                 .accessibilityHint(label ?? "")
         } else {
-            accessible
+            content
         }
     }
 }

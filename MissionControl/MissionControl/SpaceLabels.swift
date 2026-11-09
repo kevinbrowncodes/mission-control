@@ -5,9 +5,10 @@
 //  Names Spaces so the name fills that Space's thumbnail in Mission Control's Spaces bar.
 //
 //  While Mission Control is open, every named Space shows a full-screen card with its name,
-//  so its thumbnail is the name. On the current Space the card also covers Mission Control's
-//  big view of its windows; the user chose a readable thumbnail over that view. Outside
-//  Mission Control nothing shows, except a brief preview of the card right after naming.
+//  so its thumbnail is the name. On the current Space the card would also cover Mission
+//  Control's big view of its windows, so there it shows only while the pointer is up at the
+//  Spaces bar, where the thumbnails are. Outside Mission Control nothing shows, except a
+//  brief preview of the card right after naming.
 //
 //  macOS has no public API for naming Spaces or even identifying them, and the "Desktop 1"
 //  captions in the Spaces bar can't be changed without private APIs (Guideline 2.5.1).
@@ -55,19 +56,50 @@ final class SpaceLabelManager {
 
     private var missionControlTimer: Timer?
     private var missionControlOpen = false
+    /// Whether the current Space's card is up (only while the pointer is at the Spaces bar).
+    private var activeCardShown = false
+
+    /// The Spaces bar expands to thumbnails only while the pointer is near the top of the
+    /// screen; it reaches about 11.5% of the height, menu bar included.
+    private static let spacesBarFraction: CGFloat = 0.14
 
     /// macOS posts nothing when Mission Control opens, but while it's open the Dock owns a
     /// window at layer 20 covering the screen. Bounds and owner names in the public window
     /// list need no permission.
     private func startMissionControlWatch() {
-        missionControlTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+        missionControlTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
             guard let self, self.enabled, self.markers.contains(where: { $0.hasName }) else { return }
             let open = Self.missionControlIsOpen()
-            guard open != self.missionControlOpen else { return }
-            self.missionControlOpen = open
-            // Cards fade in and out gently; a fast fade-in felt jarring.
-            self.markers.forEach { $0.setCardShown(open, animated: true) }
+            let active = self.markers.first { $0.isOnActiveSpace }
+            if open != self.missionControlOpen {
+                self.missionControlOpen = open
+                // Every other named Space shows its card while Mission Control is open: it is
+                // seen only in that Space's thumbnail. Cards fade gently either way.
+                for marker in self.markers where marker !== active {
+                    marker.setCardShown(open, animated: true)
+                }
+                if !open {
+                    self.activeCardShown = false
+                    active?.setCardShown(false, animated: true)
+                }
+            }
+            guard open, let active else { return }
+            // The current Space's card would also cover Mission Control's big view of its
+            // windows, so it shows only while the pointer is up at the Spaces bar, where the
+            // thumbnails are.
+            let atBar = Self.pointerIsAtSpacesBar()
+            if atBar != self.activeCardShown {
+                self.activeCardShown = atBar
+                active.setCardShown(atBar, animated: true)
+            }
         }
+    }
+
+    private static func pointerIsAtSpacesBar() -> Bool {
+        guard let screen = NSScreen.screens.first else { return false }
+        let pointer = NSEvent.mouseLocation
+        return screen.frame.contains(pointer)
+            && pointer.y >= screen.frame.maxY - screen.frame.height * spacesBarFraction
     }
 
     private static func missionControlIsOpen() -> Bool {
@@ -401,5 +433,8 @@ struct SpaceCardView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.black.opacity(0.95))
         }
+        // Drawn for the Mission Control thumbnails only; the panel's THIS SPACE row is where
+        // the name is read. Without this, VoiceOver would find the name in a hidden window.
+        .accessibilityHidden(true)
     }
 }

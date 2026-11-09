@@ -43,8 +43,8 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Accessibility Access")
                         Text(hasAccessibility
-                             ? "Granted. App Exposé, Show Desktop, Spaces, Spotlight, window lists and quitting apps are available."
-                             : "Needed for App Exposé, Show Desktop, Spaces, Spotlight, window lists and quitting apps.")
+                             ? "Granted. App Exposé, Show Desktop, Spaces, Spotlight and quitting apps are available."
+                             : "Needed for App Exposé, Show Desktop, Spaces, Spotlight and quitting apps.")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         if !hasAccessibility {
