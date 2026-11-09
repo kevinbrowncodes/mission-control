@@ -1,8 +1,14 @@
 {
-  "app": "Mission Control",
-  "canvas": { "width": 2880, "height": 1800 },
+  "app": "Mission Control Launcher",
+  "canvas": {
+    "width": 2880,
+    "height": 1800
+  },
   "theme": {
-    "background": ["#0B1220", "#182A4C"],
+    "background": [
+      "#0B1220",
+      "#182A4C"
+    ],
     "glow": "#3B82F6",
     "captionColor": "#FFFFFF",
     "accent": "#7DD3FC",
@@ -13,30 +19,41 @@
   "shots": [
     {
       "id": "hero",
-      "caption": "Mission Control,\n**one click away**",
-      "subcaption": "A menu bar button for the desktop overview.\nWorks even when you're remoted in.",
-      "source": "panel.png"
+      "layout": "top",
+      "caption": "Mission Control, **one click away**",
+      "subcaption": "A menu bar panel for the desktop overview, your Spaces and your apps. Even when you're remoted in.",
+      "source": "studio-panel.png"
     },
     {
-      "id": "actions",
-      "caption": "The gestures remote\ndesktop **swallows**",
-      "subcaption": "Mission Control, App Exposé, Show Desktop, Spaces,\nSpotlight and screenshots. Click, don't swipe.",
-      "source": "panel.png",
-      "crop": { "x": 0, "y": 0.088, "w": 1, "h": 0.30 }
+      "id": "names",
+      "layout": "top",
+      "caption": "Name your **Spaces**",
+      "subcaption": "The name fills each thumbnail in Mission Control, so you always know which desktop is which.",
+      "source": "studio-mission-control.png"
     },
     {
-      "id": "windows",
-      "caption": "Find any window,\n**from anywhere**",
-      "subcaption": "Every running app with its windows.\nClick to bring one forward, or quit the app.",
-      "source": "panel-windows.png",
-      "crop": { "x": 0, "y": 0.415, "w": 1, "h": 0.525 }
+      "id": "remote",
+      "caption": "Your keys.\n**Their Mac.**",
+      "subcaption": "From a PC or over remote desktop,\n⌃↑ and ⌘Space can open the wrong\ncomputer's Mission Control or search.\nA click always lands on the Mac\nyou're controlling.",
+      "source": "studio-panel.png",
+      "crop": {
+        "x": 0.585,
+        "y": 0.0,
+        "w": 0.415,
+        "h": 0.62
+      }
     },
     {
-      "id": "settings",
-      "caption": "Open at login.\n**Nothing else to set up.**",
-      "subcaption": "A global shortcut, a login item, and permissions\nexplained in plain words.",
-      "source": "settings.png",
-      "fit": "width"
+      "id": "naming",
+      "caption": "Naming takes\n**one click**",
+      "subcaption": "This Space ▸ Name…, type a name,\npress Return. It shows in Mission\nControl straight away.",
+      "source": "studio-naming.png",
+      "crop": {
+        "x": 0.3,
+        "y": 0.1,
+        "w": 0.4,
+        "h": 0.5
+      }
     }
   ]
 }

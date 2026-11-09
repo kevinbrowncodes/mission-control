@@ -12,6 +12,6 @@ BUILD="${TMPDIR:-/tmp}/mission-control-render"
 mkdir -p "$BUILD"
 swiftc -O -target "$(uname -m)-apple-macos13.0" -o "$BUILD/render" \
   "$SRC/PopoverView.swift" "$SRC/SettingsView.swift" "$SRC/SystemApp.swift" \
-  "$SRC/AccessibilityAccess.swift" "$SRC/WindowLister.swift" "$SRC/Preferences.swift" \
+  "$SRC/AccessibilityAccess.swift" "$SRC/Preferences.swift" \
   "$HERE/render-mac/Render.swift"
 "$BUILD/render" "$HERE/shots-mac.json" "$@"

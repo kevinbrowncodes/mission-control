@@ -29,6 +29,9 @@ struct Spec: Codable {
         let source: String
         let crop: Crop?
         let fit: String?
+        /// "top": caption across the top, the image full width below (for whole-screen
+        /// captures). Otherwise caption on the left, image on the right.
+        let layout: String?
     }
     let app: String
     let canvas: Canvas
@@ -53,7 +56,6 @@ final class RenderActions: PopoverActions {
     func triggerSpotlight() {}
     func triggerScreenshot() {}
     func focusApp(_ app: NSRunningApplication) {}
-    func focusWindow(_ window: AppWindow, of app: NSRunningApplication) {}
     func quitApp(_ app: NSRunningApplication) {}
     func nameThisSpace() {}
 }
@@ -149,26 +151,15 @@ func renderRaws(into dir: URL, scale: CGFloat) {
     let actions = RenderActions()
     let apps = NSWorkspace.shared.runningApplications.filter { $0.activationPolicy == .regular }
 
-    // The list is alphabetical and shows about six rows, so the app whose windows are
-    // expanded must sit near the top to be visible: the first of the top four with two or
-    // more windows, else the first with any, else the first app.
-    let sorted = apps.sorted {
+    let frontmost = apps.sorted {
         ($0.localizedName ?? "").localizedCaseInsensitiveCompare($1.localizedName ?? "") == .orderedAscending
-    }
-    let top = Array(sorted.prefix(4))
-    let showcase = top.first { WindowLister.windows(of: $0).count >= 2 }
-        ?? top.first { !WindowLister.windows(of: $0).isEmpty }
-        ?? sorted.first
-
-    let panel = MainPopoverView(actions: actions, frontmostApp: showcase, hasAccessibility: true)
+    }.first
+    let panel = MainPopoverView(actions: actions, frontmostApp: frontmost, hasAccessibility: true,
+                                spaceName: "Research")
     writePNG(renderView(panel, scale: scale), to: dir.appendingPathComponent("panel.png"))
 
-    let panelWindows = MainPopoverView(actions: actions, frontmostApp: showcase,
-                                       hasAccessibility: true, expandedApp: showcase)
-    writePNG(renderView(panelWindows, scale: scale), to: dir.appendingPathComponent("panel-windows.png"))
-
     writePNG(renderView(SettingsView(), scale: scale), to: dir.appendingPathComponent("settings.png"))
-    print("rendered raws → \(dir.path) (showcase app: \(showcase?.localizedName ?? "none"))")
+    print("rendered raws → \(dir.path)")
 }
 
 // MARK: - Composing a shot
@@ -191,7 +182,8 @@ func compose(_ shot: Spec.Shot, spec: Spec, rawDir: URL) -> CGImage {
     let glow = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB),
                           colors: [glowColor.withAlphaComponent(0.28).cgColor, glowColor.withAlphaComponent(0).cgColor] as CFArray,
                           locations: [0, 1])!
-    let glowCenter = CGPoint(x: W * 0.72, y: H * 0.5)
+    let top = shot.layout == "top"
+    let glowCenter = top ? CGPoint(x: W * 0.5, y: H * 0.38) : CGPoint(x: W * 0.72, y: H * 0.5)
     ctx.drawRadialGradient(glow, startCenter: glowCenter, startRadius: 0, endCenter: glowCenter, endRadius: H * 0.62, options: [])
 
     // Panel image (optionally cropped), fitted into the right-hand box.
@@ -202,7 +194,8 @@ func compose(_ shot: Spec.Shot, spec: Spec, rawDir: URL) -> CGImage {
         guard let cropped = image.cropping(to: rect) else { fail("crop failed for \(shot.id)") }
         image = cropped
     }
-    let box = CGRect(x: W * 0.50, y: H * 0.08, width: W * 0.44, height: H * 0.84)
+    let box = top ? CGRect(x: W * 0.06, y: H * 0.04, width: W * 0.88, height: H * 0.72)
+                  : CGRect(x: W * 0.50, y: H * 0.08, width: W * 0.44, height: H * 0.84)
     let imageSize = CGSize(width: image.width, height: image.height)
     var scale = min(box.width / imageSize.width, box.height / imageSize.height)
     if shot.fit == "width" { scale = box.width / imageSize.width }
@@ -211,7 +204,7 @@ func compose(_ shot: Spec.Shot, spec: Spec, rawDir: URL) -> CGImage {
     let drawSize = CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
     let drawRect = CGRect(x: box.midX - drawSize.width / 2, y: box.midY - drawSize.height / 2,
                           width: drawSize.width, height: drawSize.height).integral
-    let radius: CGFloat = 34
+    let radius: CGFloat = top ? 22 : 34
 
     // Shadow, then the clipped image, then a hairline so the card reads against the background.
     ctx.saveGState()
@@ -239,19 +232,27 @@ func compose(_ shot: Spec.Shot, spec: Spec, rawDir: URL) -> CGImage {
     NSGraphicsContext.saveGraphicsState()
     NSGraphicsContext.current = ns
 
-    let column = CGRect(x: W * 0.065, y: 0, width: W * 0.40, height: H)
-    let titleFont = NSFont.systemFont(ofSize: 116, weight: .bold)
-    let subFont = NSFont.systemFont(ofSize: 46, weight: .regular)
-    let title = caption(shot.caption, font: titleFont, color: NSColor(hex: theme.captionColor), accent: NSColor(hex: theme.accent))
+    // Side layout: a left column, vertically centred. Top layout: a centred band above the
+    // image, one or two lines each.
+    let column = top ? CGRect(x: W * 0.06, y: box.maxY, width: W * 0.88, height: H - box.maxY)
+                     : CGRect(x: W * 0.065, y: 0, width: W * 0.40, height: H)
+    let titleFont = NSFont.systemFont(ofSize: top ? 92 : 116, weight: .bold)
+    let subFont = NSFont.systemFont(ofSize: top ? 40 : 46, weight: .regular)
+    let title = NSMutableAttributedString(attributedString: caption(shot.caption, font: titleFont,
+        color: NSColor(hex: theme.captionColor), accent: NSColor(hex: theme.accent)))
+    let paragraph = NSMutableParagraphStyle()
+    paragraph.alignment = top ? .center : .natural
+    title.addAttribute(.paragraphStyle, value: paragraph, range: NSRange(location: 0, length: title.length))
     let sub = shot.subcaption.map {
-        NSAttributedString(string: $0, attributes: [.font: subFont, .foregroundColor: NSColor(hex: theme.subColor)])
+        NSAttributedString(string: $0, attributes: [.font: subFont, .foregroundColor: NSColor(hex: theme.subColor),
+                                                    .paragraphStyle: paragraph])
     }
     let options: NSString.DrawingOptions = [.usesLineFragmentOrigin]
     let titleSize = title.boundingRect(with: CGSize(width: column.width, height: H), options: options).size
     let subSize = sub?.boundingRect(with: CGSize(width: column.width, height: H), options: options).size ?? .zero
-    let gap: CGFloat = sub == nil ? 0 : 44
+    let gap: CGFloat = sub == nil ? 0 : (top ? 18 : 44)
     let total = titleSize.height + gap + subSize.height
-    var y = (H + total) / 2   // top of the block, in the unflipped coordinate system
+    var y = column.midY + total / 2   // top of the block, in the unflipped coordinate system
     title.draw(with: CGRect(x: column.minX, y: y - titleSize.height, width: column.width, height: titleSize.height), options: options)
     y -= titleSize.height + gap
     sub?.draw(with: CGRect(x: column.minX, y: y - subSize.height, width: column.width, height: subSize.height), options: options)
