@@ -50,7 +50,7 @@ Spec: 16:10, one of 1280×800 / 1440×900 / 2560×1600 / 2880×1800, PNG without
 
 ## App preview (1920×1080, about 20 s)
 
-Hands records at 4 fps, so the preview is cut from Hands' 4K stills: `appstore/preview/stills/` (scaled to 1920×1080), a slow zoom on each, 0.4 s crossfades, SF Pro caption bars drawn by `captions.swift`, an end card and a silent stereo track. `python3 appstore/preview/make_preview.py` writes `appstore/preview/preview.mp4` (not committed). ascpilot has no preview upload, so it goes up by hand in App Store Connect (Mac ▸ App Previews and Screenshots).
+Hands records at 4 fps, so the preview is cut from Hands' 4K stills: `appstore/preview/stills/` (scaled to 1920×1080), a slow zoom on each, 0.4 s crossfades, SF Pro caption bars drawn by `captions.swift`, an end card and a silent stereo track. `python3 appstore/preview/make_preview.py` writes `appstore/preview/preview.mp4` (not committed). ascpilot has no preview upload, so `python3 appstore/upload-preview.py` does it with ascpilot's own auth and API helpers (it loads ascpilot's `bin/asc.py`, changing nothing there): it replaces the DESKTOP preview set and sets the poster frame at 6 s. `--status` shows App Store Connect's processing state.
 
 ## Upload
 
@@ -68,6 +68,7 @@ python3 $ASC/asc.py set-version-meta    # description, keywords, promo text, ©,
 python3 $ASC/asc.py set-review-details  # contact + the review notes above
 python3 $ASC/asc.py upload-screenshots  # replaces the APP_DESKTOP set with out/mac/01–04 (order in asc_meta.json)
 ./appstore/upload-mac.sh                # archive + upload build 2 (ascpilot's upload.sh is iOS-only)
+python3 appstore/preview/make_preview.py && python3 appstore/upload-preview.py   # the app preview
 python3 $ASC/asc.py attach-build        # once processing shows VALID
 python3 $ASC/asc.py submit
 ```
