@@ -1,9 +1,9 @@
 #!/bin/zsh
 # Archives Mission Control for macOS and uploads it to App Store Connect.
 #
-# ascpilot's bin/upload.sh is iOS-only (it archives with
+# Launch's bin/upload.sh is iOS-only (it archives with
 # -destination "generic/platform=iOS"), so the Mac build has its own copy here.
-# Everything else in the release flow is ascpilot's; see appstore/SUBMISSION.md.
+# Everything else in the release flow is Launch's; see appstore/SUBMISSION.md.
 #
 # Needs Xcode signed in to the Apple Developer account (Xcode ▸ Settings ▸ Accounts)
 # so -allowProvisioningUpdates can mint the Mac App Store distribution certificate

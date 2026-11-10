@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 # ── Gate: store metadata fits App Store Connect's limits ─────────────────────
-# ascpilot sends these fields as-is; an over-long one fails mid-release, after
+# Launch sends these fields as-is; an over-long one fails mid-release, after
 # the build is uploaded. Limits are Apple's, not ours.
 python3 - <<'PY'
 import json, sys

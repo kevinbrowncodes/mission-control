@@ -31,5 +31,11 @@
         "04-naming"
       ]
     }
+  },
+  "previews": {
+    "DESKTOP": {
+      "file": "preview/preview.mp4",
+      "poster": "00:00:06:15"
+    }
   }
 }
