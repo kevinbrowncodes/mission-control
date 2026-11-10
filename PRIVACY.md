@@ -7,4 +7,4 @@ Mission Control (the macOS menu bar app by Kevin Brown) does not collect, store,
 - The only setting it stores is its own preferences (Open at Login, the global shortcut toggle), in the app's sandbox container.
 - There are no accounts, analytics, advertising or third-party SDKs.
 
-Questions: open an issue at https://github.com/kevinbrowncodes/mission-control.
+Questions: open an issue at https://github.com/kevinbrowncodes/mission-control-launcher.

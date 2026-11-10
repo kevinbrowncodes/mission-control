@@ -54,11 +54,11 @@ Hands records at 4 fps, so the preview is cut from Hands' 4K stills: `appstore/p
 
 ## Upload
 
-Uses [Launch](https://github.com/kevinbrowncodes/launch) (`~/Documents/GitHub/kevinbrowncodes/launch`, formerly ascpilot), where Mission Control is registered as `mission-control`. One-time: the API key in `~/.appstoreconnect/private_keys/` and `issuer_id` in `~/.appstoreconnect/ascpilot.json` (see its README). `launch asc` takes the meta path and bundle ID from Launch's registry, so the commands work from anywhere (the screenshot and preview paths inside the meta file are relative to the meta file):
+Uses [Launch](https://github.com/kevinbrowncodes/launch) (`~/Documents/GitHub/kevinbrowncodes/launch`, formerly ascpilot), where Mission Control is registered as `mission-control-launcher`. One-time: the API key in `~/.appstoreconnect/private_keys/` and `issuer_id` in `~/.appstoreconnect/ascpilot.json` (see its README). `launch asc` takes the meta path and bundle ID from Launch's registry, so the commands work from anywhere (the screenshot and preview paths inside the meta file are relative to the meta file):
 
 ```sh
 export ASC_PLATFORM=MAC_OS
-L="$HOME/Documents/GitHub/kevinbrowncodes/launch/bin/launch asc mission-control"
+L="$HOME/Documents/GitHub/kevinbrowncodes/launch/bin/launch asc mission-control-launcher"
 
 $L verify              # key + app record wired up
 $L status              # version state; must be editable (Rejected / Prepare for Submission)

@@ -46,7 +46,7 @@ Built with SwiftUI and AppKit. No dependencies.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/kevinbrowncodes/mission-control.git
+   git clone https://github.com/kevinbrowncodes/mission-control-launcher.git
    ```
 2. Open `MissionControl/MissionControl.xcodeproj` in Xcode.
 3. Build and Run (⌘R). The app has no Dock icon or main window; look for the icon in the menu bar.
